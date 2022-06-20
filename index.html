@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GSC and Site Search Compare</title>
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,900' rel='stylesheet' type='text/css'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+  <style>
+    html {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      /* Chrome all / Safari all */
+      -moz-user-select: none;
+      /* Firefox all */
+      -ms-user-select: none;
+      /* IE 10+ */
+      user-select: none;
+      /* Likely future */
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: inherit;
+    }
+
+    b {
+      font-weight: bold;
+    }
+
+    body {
+      width: 700px;
+      margin: 0 auto;
+      background-color: #FAFAFA;
+      font-family: 'Source Sans Pro', sans-serif;
+      color: #111;
+    }
+
+    .container {
+      margin: 2% auto;
+      padding: 15px;
+      background-color: #FFFFFF;
+      -webkit-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2);
+      box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 1% 0 3%;
+    }
+
+    textarea {
+      width: 100%;
+      height: 250px;
+      padding: 10px;
+      border: 1px solid #d9d9d9;
+      outline: none;
+      font-size: 1rem;
+      resize: none;
+      line-height: 1.5rem;
+    }
+
+    textarea:hover {
+      border-color: #C0C0C0;
+    }
+
+    textarea:focus {
+      border-color: #4D90FE;
+    }
+
+    .output.row {
+      width: 100%;
+      border: 1px solid #DDD;
+      font-size: 1.4rem;
+      margin: 1% 0;
+      background-color: #F9F9F9;
+    }
+
+    .output.row div {
+      display: inline-block;
+      width: 42%;
+      padding: 10px 15px;
+      margin: 1%;
+    }
+
+    .output.row span {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    #readability {
+      width: 52%;
+      font-weight: bold;
+    }
+
+    #readability:hover {
+      background-color: #4D90FE;
+      color: #FFF;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    #readability:active {
+      background-color: #307AF3;
+    }
+
+    .keywords {
+      display: none;
+      margin: 4% 0 0;
+      font-size: 2rem;
+      font-weight: 900;
+    }
+
+    .keywords ul {
+      font-weight: 400;
+      border: 1px solid #DDD;
+      font-size: 1.4rem;
+      background-color: #F9F9F9;
+      margin: 2% 0;
+    }
+
+    .keywords li {
+      display: inline-block;
+      width: 44%;
+      padding: 10px;
+      margin: 1%;
+    }
+    @media (max-width: 750px) {
+      body {
+        width: 600px;
+      }
+
+      .output.row {
+        font-size: 1.2rem;
+      }
+
+      .output.row span {
+        font-size: 1.3rem;
+      }
+
+      .keywords ul {
+        font-size: 1.2rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        width: 95%;
+      }
+
+      .output.row {
+        border: none;
+        background-color: #FFF;
+      }
+
+      .output.row div {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+        margin: 2% auto;
+        border: 1px solid #DDD;
+        font-size: 1.8rem;
+        background-color: #F9F9F9;
+      }
+
+      .output.row span {
+        font-size: 2rem;
+      }
+
+      #readability {
+        width: 100%;
+        font-size: 1.6rem;
+        font-weight: 400;
+      }
+
+      .keywords {
+        margin: 10% auto;
+      }
+
+      .keywords ul {
+        font-weight: 400;
+        border: none;
+        font-size: 1.8rem;
+        background-color: #F9F9F9;
+        margin: 5% 0;
+      }
+
+      .keywords li {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin: 2% auto;
+        border: 1px solid #DDD;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GSC Queries by URL</h1>
+    <textarea id="gsc" placeholder="Enter one query per line"></textarea>
+    <h1>Site Search Keywords</h1>
+    <textarea id="sitesearch" placeholder="Enter one query per line"></textarea>
+    <div class="output row">
+      <div>GSC Queries: <span id="gscQueries">0</span></div>
+      <div>Site Search Queries: <span id="sitesearchQueries">0</span></div>
+      <div>Percent Match: <span id="matchPercent">0</span></div>
+      <div>Keyword Difference: <span id="keywordDiff">0</span></div>
+    </div>
+  </div>
+  <script>
+    let getKeywords = (str) => {
+      return str.split(/\n/).map((k) => k.toLowerCase()).filter(Boolean)
+    }
+
+    let findPercentage = (first, second) => {
+      const count = first.reduce((acc, val) => {
+        if (second.includes(val)) {
+          return ++acc;
+        };
+        return acc;
+      }, 0);
+      console.log('findPercentage', (count / first.length) * 100)
+      let percent = parseFloat((count / first.length) * 100).toFixed(2)
+      return (isNaN(percent)) ? "" : percent;
+    };
+
+    let gsc = document.querySelector('#gsc')
+    let sitesearch = document.querySelector('#sitesearch')
+    let gscQueries = document.querySelector('#gscQueries')
+    let sitesearchQueries = document.querySelector('#sitesearchQueries')
+    let matchPercent = document.querySelector("#matchPercent")
+    let keywordDiff = document.querySelector("#keywordDiff")
+
+    // updating the displayed stats after every keypress
+    gsc.addEventListener('keyup', function () {
+      let lower = getKeywords(gsc.value)
+      gscQueries.innerHTML = lower.length
+      console.log('gsc', lower)
+      let ssClean = getKeywords(sitesearch.value)
+      matchPercent.innerHTML = findPercentage(lower, ssClean) || ""
+      keywordDiff.innerHTML = parseInt(lower.length-ssClean.length)
+    })
+
+    // updating the displayed stats after every keypress
+    sitesearch.addEventListener('keyup', function () {
+      let lower = getKeywords(sitesearch.value)
+      sitesearchQueries.innerHTML = lower.length
+      console.log('sitesearch', lower)
+      let gscClean = getKeywords(gsc.value)
+      matchPercent.innerHTML = findPercentage(lower, gscClean) || ""
+      keywordDiff.innerHTML = parseInt(lower.length-gscClean.length)
+    })
+  </script>
+</body>
+</html>
